@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource sqlite {
+  provider = "sqlite"
+  url = "***"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Operator {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  tests      Test[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+model Instrumentalist {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  tests      Test[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+model Test {
+  id                Int             @id @default(autoincrement())
+  name              String
+  dateInit          String
+  dateEnd           String?
+  isEnd             Boolean         @default(false)
+  operator          Operator        @relation(fields: [operatorId], references: [id])
+  operatorId        Int
+  instrumentalist   Instrumentalist @relation(fields: [instrumentalistId], references: [id])
+  instrumentalistId Int
+  testsources       TestSource[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model TestSource {
+  id           Int          @id @default(autoincrement())
+  sensor       Sensor       @relation(fields: [sensorId], references: [id])
+  sensorId     Int
+  datasource   DataSource   @relation(fields: [datasourceId], references: [id])
+  datasourceId Int
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Sensor {
+  id         Int         @id @default(autoincrement())
+  name       String
+  tag        String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model DataSource {
+  id         Int         @id @default(autoincrement())
+  data       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
