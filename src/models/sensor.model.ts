@@ -3,7 +3,7 @@ import { IsString, IsNumber, IsOptional } from 'class-validator';
 export class sensorModel {
   @IsNumber()
   @IsOptional()
-  id?: number;
+  id?: string;
 
   @IsString()
   @IsOptional()

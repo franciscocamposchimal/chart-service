@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaClientService } from '../prisma-client/prisma-client/prisma-client.service';
-import { TestDataDTO } from './test.dto';
+import { TestModel } from '../models/test.model';
 
 @Injectable()
 export class TestService {
@@ -27,69 +27,83 @@ export class TestService {
   }
 
   async createTest({
-    test,
+    name,
+    dateInit,
     operator,
     instrumentalist,
     testSorurces,
-  }: TestDataDTO) {
-
+  }: TestModel) {
     const newTest = await this.prisma.test.create({
       data: {
-        name: test.name,
-        dateInit: test.dateInit,
+        name,
+        dateInit,
         operator: {
           connect: {
-            id: operator.id,
+            id: parseInt(operator.id),
           },
         },
         instrumentalist: {
           connect: {
-            id: instrumentalist.id,
+            id: parseInt(instrumentalist.id),
           },
         },
         testsources: {
-          connect: testSorurces,
+          connect: testSorurces.map(({ id }) => {
+            return { id: parseInt(id) };
+          }),
         },
       },
       include: {
         operator: true,
         instrumentalist: true,
+        testsources: true,
       },
     });
 
     return newTest;
   }
 
-  async updateTest() {
+  async updateTest(
+    id: any,
+    { name, dateEnd, isEnd, operator, instrumentalist }: TestModel,
+  ) {
+    let data: any = {};
+
+    if (name) data.name = name;
+    if (dateEnd) data.dateEnd = dateEnd;
+    if (isEnd || isEnd === false || isEnd === true) data.isEnd = isEnd;
+    if (operator) data.operator = { connect: { id: parseInt(operator.id) } };
+    if (instrumentalist)
+      data.instrumentalist = { connect: { id: parseInt(instrumentalist.id) } };
+
     const testUpdated = await this.prisma.test.update({
       where: {
-        id: 1,
+        id: parseInt(id),
       },
-      data: {
-        name: '',
-        dateEnd: '',
-        isEnd: true,
-        operator: {
-          connect: {
-            id: 1,
-          },
-        },
-        instrumentalist: {
-          connect: {
-            id: 1,
-          },
-        },
-        testsources: {
-          connect: [
-            {
-              id: 2,
-            },
-            {
-              id: 2,
-            },
-          ],
-        },
+      data,
+      include: {
+        operator: true,
+        instrumentalist: true,
+        testsources: true,
       },
     });
+
+    return testUpdated;
+  }
+
+  async deleteTest(id: any) {
+    try {
+      const deleteConfirmation = await this.prisma.test.delete({
+        where: { id: parseInt(id) },
+        include: {
+          operator: true,
+          instrumentalist: true,
+          testsources: true,
+        },
+      });
+      return deleteConfirmation;
+    } catch (error) {
+      return error;
+    }
   }
 }

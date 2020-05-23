@@ -12,4 +12,5 @@ export class PrismaClientService extends PrismaClient
   async onModuleInit() {
     await this.disconnect();
   }
+
 }

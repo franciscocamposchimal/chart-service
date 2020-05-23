@@ -1,15 +1,11 @@
-import {
-    IsString,
-    IsNumber,
-    IsOptional,
-  } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class dataSourceModel {
-    @IsNumber()
-    @IsOptional()
-    id?: number
+  @IsNumber()
+  @IsOptional()
+  id?: string;
 
-    @IsString()
-    @IsOptional()
-    data?: string
+  @IsString()
+  @IsOptional()
+  data?: string;
 }

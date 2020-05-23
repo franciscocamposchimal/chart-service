@@ -1,6 +1,6 @@
-import { Controller, Get, Res, HttpStatus, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Res, HttpStatus, Param, Post, Body, Put, Delete } from '@nestjs/common';
 import { TestService } from './test.service';
-import { TestDataDTO } from './test.dto';
+import { TestModel } from '../models/test.model';
 
 @Controller('test')
 export class TestController {
@@ -21,8 +21,20 @@ export class TestController {
     }
 
     @Post()
-    public async createTest(@Res() res, @Body() body: TestDataDTO){
+    public async createTest(@Res() res, @Body() body: TestModel){
         const newTest = await this.testService.createTest(body);
         return res.status(HttpStatus.OK).json(newTest);
+    }
+
+    @Put('/:id')
+    public async updateTest(@Res() res, @Param() {id} ,@Body() body: TestModel){
+        const updateTest = await this.testService.updateTest(id, body);
+        return res.status(HttpStatus.OK).json(updateTest);
+    }
+
+    @Delete('/:id')
+    public async deleteTest(@Res() res, @Param() {id}){
+        const deleteConfirm = await this.testService.deleteTest(id);
+        return res.status(HttpStatus.OK).json(deleteConfirm);
     }
 }
