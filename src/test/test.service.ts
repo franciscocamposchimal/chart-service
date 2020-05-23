@@ -30,9 +30,10 @@ export class TestService {
     test,
     operator,
     instrumentalist,
-    testSorurce: { sensor },
+    testSorurces,
   }: TestDataDTO) {
-    const newTest = this.prisma.test.create({
+
+    const newTest = await this.prisma.test.create({
       data: {
         name: test.name,
         dateInit: test.dateInit,
@@ -47,20 +48,7 @@ export class TestService {
           },
         },
         testsources: {
-          create: [
-            {
-              sensor: {
-                connect: {
-                  id: sensor.id,
-                },
-              },
-              datasource: {
-                create: {
-                  data: '[]',
-                },
-              },
-            },
-          ],
+          connect: testSorurces,
         },
       },
       include: {
@@ -73,7 +61,7 @@ export class TestService {
   }
 
   async updateTest() {
-    const testUpdated = this.prisma.test.update({
+    const testUpdated = await this.prisma.test.update({
       where: {
         id: 1,
       },
