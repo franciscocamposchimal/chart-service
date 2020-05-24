@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClientService } from '../prisma-client/prisma-client/prisma-client.service';
 import { TestModel } from '../models/test.model';
 
@@ -20,6 +20,10 @@ export class TestService {
     const test = await this.prisma.test.findOne({
       where: {
         id: parseInt(id),
+      },
+      include: {
+        operator: true,
+        instrumentalist: true,
       },
     });
 
