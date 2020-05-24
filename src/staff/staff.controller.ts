@@ -31,7 +31,7 @@ export class StaffController {
   }
 
   @Post('/operators')
-  public async createTest(@Res() res, @Body() body: OperatorModel) {
+  public async createOp(@Res() res, @Body() body: OperatorModel) {
     const newOp = await this.staffService.createOperator(body);
     return res.status(HttpStatus.OK).json(newOp);
   }
