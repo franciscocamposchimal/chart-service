@@ -9,6 +9,8 @@ import {
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 
+let DATA_CLIENT = '';
+
 @WebSocketGateway()
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -16,8 +18,20 @@ export class AppGateway
   private logger: Logger = new Logger('AppGateway');
 
   @SubscribeMessage('SERVER_SOCK')
-  handleMessage(client: Socket, payload: any): void {
+  handleData(client: Socket, payload: any): void {
+    this.logger.log(payload);
     this.server.emit('SENSORS_DATA', payload);
+  }
+
+  @SubscribeMessage('SENSORS_CONNECTION')
+  handleSensorsConnnection(client: Socket, isConnected: boolean): void {
+    DATA_CLIENT = client.id;
+    this.logger.log('SENSORS_CONNECTION');
+    this.logger.log(DATA_CLIENT);
+    this.server.emit('SENSORS_ISCONNECTED', {
+      client: DATA_CLIENT,
+      isConnected,
+    });
   }
 
   afterInit(server: Server) {
@@ -25,6 +39,14 @@ export class AppGateway
   }
 
   handleDisconnect(client: Socket) {
+    if (DATA_CLIENT == client.id) {
+      this.logger.log('SENSORS_ISCONNECTED');
+      this.server.emit('SENSORS_ISCONNECTED', {
+        client: DATA_CLIENT,
+        isConnected: false,
+      });
+      DATA_CLIENT = '';
+    }
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
