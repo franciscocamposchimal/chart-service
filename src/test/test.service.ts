@@ -1,32 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClientService } from '../prisma-client/prisma-client.service';
 import { TestModel } from '../models/test.model';
+import { getRepository } from 'typeorm';
+import { Test } from '../entities/Test.entity';
 
 @Injectable()
 export class TestService {
-  constructor(private prisma: PrismaClientService) {}
+  constructor() {}
 
   async getAllTest() {
-    const tests = await this.prisma.test.findMany({
-      include: {
-        operator: true,
-        instrumentalist: true,
-      },
+    const tests = await getRepository(Test).find({
+      relations: ['instrumentalist', 'operator', 'testSources'],
     });
     return tests;
   }
 
   async getOneTest(id: any) {
-    const test = await this.prisma.test.findOne({
+    const test = await getRepository(Test).findOne({
       where: {
-        id: parseInt(id),
+        id,
       },
-      include: {
-        operator: true,
-        instrumentalist: true,
-      },
+      relations: ['instrumentalist', 'operator', 'testSources'],
     });
-
     return test;
   }
 
@@ -37,33 +31,22 @@ export class TestService {
     instrumentalist,
     testSorurces,
   }: TestModel) {
-    const newTest = await this.prisma.test.create({
-      data: {
+    const test = getRepository(Test);
+    const newTest = await test.save(
+      test.create({
         name,
         dateInit,
         operator: {
-          connect: {
-            id: parseInt(operator.id),
-          },
+          id: parseInt(operator.id),
         },
         instrumentalist: {
-          connect: {
-            id: parseInt(instrumentalist.id),
-          },
+          id: parseInt(instrumentalist.id),
         },
-        testsources: {
-          connect: testSorurces.map(({ id }) => {
-            return { id: parseInt(id) };
-          }),
-        },
-      },
-      include: {
-        operator: true,
-        instrumentalist: true,
-        testsources: true,
-      },
-    });
-
+        testSources: testSorurces.map(({ id }) => {
+          return { id: parseInt(id) };
+        }),
+      }),
+    );
     return newTest;
   }
 
@@ -76,35 +59,19 @@ export class TestService {
     if (name) data.name = name;
     if (dateEnd) data.dateEnd = dateEnd;
     if (isEnd || isEnd === false || isEnd === true) data.isEnd = isEnd;
-    if (operator) data.operator = { connect: { id: parseInt(operator.id) } };
+    if (operator) data.operator = { id: parseInt(operator.id) };
     if (instrumentalist)
-      data.instrumentalist = { connect: { id: parseInt(instrumentalist.id) } };
+      data.instrumentalist = { id: parseInt(instrumentalist.id) };
 
-    const testUpdated = await this.prisma.test.update({
-      where: {
-        id: parseInt(id),
-      },
-      data,
-      include: {
-        operator: true,
-        instrumentalist: true,
-        testsources: true,
-      },
-    });
+    await getRepository(Test).update(id, data);
 
-    return testUpdated;
+    return await this.getOneTest(id);
   }
 
   async deleteTest(id: any) {
     try {
-      const deleteConfirmation = await this.prisma.test.delete({
-        where: { id: parseInt(id) },
-        include: {
-          operator: true,
-          instrumentalist: true,
-          testsources: true,
-        },
-      });
+      const deleteConfirmation = await this.getOneTest(id);
+      await getRepository(Test).delete(id);
       return deleteConfirmation;
     } catch (error) {
       return error;
