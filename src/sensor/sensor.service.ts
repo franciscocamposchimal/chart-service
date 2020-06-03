@@ -1,28 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClientService } from '../prisma-client/prisma-client.service';
-import { sensorModel } from 'src/models/sensor.model';
+import { sensorModel } from '../models/sensor.model';
+import { getRepository } from 'typeorm';
+import { Sensor } from '../entities/Sensor.entity';
 
 @Injectable()
 export class SensorService {
-  constructor(private prisma: PrismaClientService) {}
+  constructor() {}
 
   async getAllSensors() {
-    const sensors = await this.prisma.sensor.findMany();
+    const sensors = await getRepository(Sensor).find({
+      relations: ['testSources'],
+    });
     return sensors;
   }
 
   async getOneSensor(id: any) {
-    const sensor = this.prisma.sensor.findOne({ where: { id: parseInt(id) } });
+    const sensor = await getRepository(Sensor).findOne({
+      where: {
+        id,
+      },
+      relations: ['testSources'],
+    });
     return sensor;
   }
 
   async createSensor({ name, tag }: sensorModel) {
-    const newSensor = this.prisma.sensor.create({
-      data: {
-        name,
-        tag,
-      },
-    });
+    const newSensor = await getRepository(Sensor).save({ name, tag });
     return newSensor;
   }
 
@@ -32,11 +35,8 @@ export class SensorService {
     if (tag) data.tag = tag;
 
     try {
-      const sensorUpdated = this.prisma.sensor.update({
-        where: { id: parseInt(id) },
-        data,
-      });
-      return sensorUpdated;
+      await getRepository(Sensor).update(id, data);
+      return await this.getOneSensor(id);
     } catch (error) {
       return error;
     }
@@ -44,9 +44,8 @@ export class SensorService {
 
   async deleteSensor(id: any) {
     try {
-      const deleteConfirmation = this.prisma.sensor.delete({
-        where: { id: parseInt(id) },
-      });
+      const deleteConfirmation = await this.getOneSensor(id);
+      await getRepository(Sensor).delete(id);
       return deleteConfirmation;
     } catch (error) {
       return error;

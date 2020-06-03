@@ -20,8 +20,8 @@ export class StaffController {
   // Operator
   @Get('/operators')
   public async getAllOperator(@Res() res) {
-    const operator = await this.staffService.getAllOperators();
-    return res.status(HttpStatus.OK).json(operator);
+    const operators = await this.staffService.getAllOperators();
+    return res.status(HttpStatus.OK).json(operators);
   }
 
   @Get('/operators/:id')
