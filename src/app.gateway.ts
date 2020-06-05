@@ -17,25 +17,18 @@ export class AppGateway
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
 
-  @SubscribeMessage('SERVER_SOCK')
-  handleData(client: Socket, payload: any): void {
-    this.logger.log(payload);
-    this.server.emit('SENSORS_DATA', payload);
-  }
-
-  @SubscribeMessage('SENSORS_CONNECTION')
-  handleSensorsConnnection(client: Socket, isConnected: boolean): void {
-    DATA_CLIENT = client.id;
-    this.logger.log('SENSORS_CONNECTION');
-    this.logger.log(DATA_CLIENT);
-    this.server.emit('SENSORS_ISCONNECTED', {
-      client: DATA_CLIENT,
-      isConnected,
-    });
-  }
-
   afterInit(server: Server) {
     this.logger.log('Init');
+  }
+
+  handleConnection(client: Socket, ...args: any[]) {
+    if (DATA_CLIENT != client.id && DATA_CLIENT != '') {
+      this.server.emit('SENSORS_ISCONNECTED', {
+        client: DATA_CLIENT,
+        isConnected: true,
+      });
+    }
+    this.logger.log(`Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
@@ -50,7 +43,20 @@ export class AppGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`Client connected: ${client.id}`);
+  @SubscribeMessage('SERVER_SOCK')
+  handleData(client: Socket, payload: any): void {
+    // this.logger.log(payload);
+    this.server.emit('SENSORS_DATA', payload);
+  }
+
+  @SubscribeMessage('SENSORS_CONNECTION')
+  handleSensorsConnnection(client: Socket, isConnected: boolean): void {
+    DATA_CLIENT = client.id;
+    // this.logger.log('SENSORS_CONNECTION');
+    // this.logger.log(DATA_CLIENT);
+    this.server.emit('SENSORS_ISCONNECTED', {
+      client: DATA_CLIENT,
+      isConnected,
+    });
   }
 }
