@@ -48,31 +48,31 @@ export class StaffController {
     return res.status(HttpStatus.OK).json(deleteConfirm);
   }
   // Intrumentalist
-  @Get('/instrumentalist')
+  @Get('/instrumentalists')
   public async getAllInst(@Res() res) {
     const instrumentalists = await this.staffService.getAllInstrumentalist();
     return res.status(HttpStatus.OK).json(instrumentalists);
   }
 
-  @Get('/instrumentalist/:id')
+  @Get('/instrumentalists/:id')
   public async getOneInst(@Res() res, @Param() { id }) {
     const instrumentalist = await this.staffService.getOneInstrumentalist(id);
     return res.status(HttpStatus.OK).json(instrumentalist);
   }
 
-  @Post('/instrumentalist')
+  @Post('/instrumentalists')
   public async createInst(@Res() res, @Body() body: instrumentalistModel) {
     const newInst = await this.staffService.createInstrumentalist(body);
     return res.status(HttpStatus.OK).json(newInst);
   }
 
-  @Put('/instrumentalist/:id')
+  @Put('/instrumentalists/:id')
   public async updateInst(@Res() res, @Param() { id }, @Body() { name }) {
     const updateInst = await this.staffService.updateInstrumentalist(id, name);
     return res.status(HttpStatus.OK).json(updateInst);
   }
 
-  @Delete('/instrumentalist/:id')
+  @Delete('/instrumentalists/:id')
   public async deleteInst(@Res() res, @Param() { id }) {
     const deleteConfirm = await this.staffService.deleteInstrumentalist(id);
     return res.status(HttpStatus.OK).json(deleteConfirm);
