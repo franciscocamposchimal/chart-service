@@ -11,7 +11,11 @@ import { Socket, Server } from 'socket.io';
 
 let DATA_CLIENT = '';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  options: {
+    pingTimeout: 60000,
+  },
+})
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
