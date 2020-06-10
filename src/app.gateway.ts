@@ -12,9 +12,9 @@ import { Socket, Server } from 'socket.io';
 let DATA_CLIENT = '';
 
 @WebSocketGateway({
-  options: {
-    pingTimeout: 60000,
-  },
+  origins: '*:*',
+  pingTimeout: 60000,
+  transports: ['websocket', 'polling'],
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

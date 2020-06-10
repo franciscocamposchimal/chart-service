@@ -12,4 +12,8 @@ export class sensorModel {
   @IsString()
   @IsOptional()
   tag?: string;
+
+  @IsString()
+  @IsOptional()
+  type?: string;
 }

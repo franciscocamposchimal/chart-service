@@ -11,6 +11,12 @@ export class SensorController {
       const sensors = await this.sensorService.getAllSensors();
       return res.status(HttpStatus.OK).json(sensors);
     }
+
+    @Get('/graphic')
+    public async getSensorForGraph(@Res() res) {
+      const sensors = await this.sensorService.getSensorToGraph();
+      return res.status(HttpStatus.OK).json(sensors);
+    }
   
     @Get('/:id')
     public async getOneSens(@Res() res, @Param() { id }) {

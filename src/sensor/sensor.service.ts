@@ -14,6 +14,12 @@ export class SensorService {
     return sensors;
   }
 
+  async getSensorToGraph() {
+    const sensorsT = await getRepository(Sensor).find({where: { type: 'T'}});
+    const sensorsP = await getRepository(Sensor).find({where: { type: 'P'}});
+    return { sensorsT, sensorsP };
+  }
+
   async getOneSensor(id: any) {
     const sensor = await getRepository(Sensor).findOne({
       where: {
@@ -24,15 +30,16 @@ export class SensorService {
     return sensor;
   }
 
-  async createSensor({ name, tag }: sensorModel) {
-    const newSensor = await getRepository(Sensor).save({ name, tag });
+  async createSensor({ name, tag, type }: sensorModel) {
+    const newSensor = await getRepository(Sensor).save({ name, tag, type });
     return newSensor;
   }
 
-  async updateSensor(id: any, { name, tag }: sensorModel) {
+  async updateSensor(id: any, { name, tag, type }: sensorModel) {
     let data: any = {};
     if (name) data.name = name;
     if (tag) data.tag = tag;
+    if (type) data.type = type;
 
     try {
       await getRepository(Sensor).update(id, data);

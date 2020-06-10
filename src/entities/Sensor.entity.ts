@@ -11,6 +11,9 @@ export class Sensor {
   
   @Column("text", { name: "tag" })
   tag: string;
+
+  @Column("text", { name: "type", nullable: true })
+  type?: string;
   
   @OneToMany(() => TestSource, (testSource) => testSource.sensor)
   testSources: TestSource[];
