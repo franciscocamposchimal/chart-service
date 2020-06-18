@@ -11,6 +11,7 @@ export class StaffService {
   // Gets Operator
   async getAllOperators() {
     const operators = await getRepository(Operator).find({
+      order:{ id: 'DESC' },
       relations: ['tests'],
     });
     return operators;
@@ -29,6 +30,7 @@ export class StaffService {
   // Gets Instrumentalist
   async getAllInstrumentalist() {
     const instrumentalists = await getRepository(Instrumentalist).find({
+      order:{ id: 'DESC' },
       relations: ['tests'],
     });
     return instrumentalists;

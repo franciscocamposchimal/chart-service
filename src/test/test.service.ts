@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { TestModel } from '../models/test.model';
-import { getRepository } from 'typeorm';
+import { getRepository, In } from 'typeorm';
 import { Test } from '../entities/Test.entity';
+import { Operator } from '../entities/Operator.entity';
+import { Instrumentalist } from '../entities/Instrumentalist.entity';
+import { Sensor } from '../entities/Sensor.entity';
+import { DataSource } from '../entities/DataSource.entity';
+import { TestSource } from '../entities/TestSource.entity';
 
 @Injectable()
 export class TestService {
@@ -9,7 +14,13 @@ export class TestService {
 
   async getAllTest() {
     const tests = await getRepository(Test).find({
-      relations: ['instrumentalist', 'operator', 'testSources'],
+      relations: [
+        'instrumentalist',
+        'operator',
+        'testSources',
+        'testSources.sensor',
+        'testSources.datasource',
+      ],
     });
     return tests;
   }
@@ -29,24 +40,76 @@ export class TestService {
     dateInit,
     operator,
     instrumentalist,
-    testSorurces,
+    sensorsTSelected,
+    sensorsPSelected,
   }: TestModel) {
-    const test = getRepository(Test);
-    const newTest = await test.save(
-      test.create({
+    // Repositorios a trabajar
+    const operatorRep = getRepository(Operator);
+    const instrumentalistRep = getRepository(Instrumentalist);
+    const sensorRep = getRepository(Sensor);
+    const testRep = getRepository(Test);
+    const dataSourceRep = getRepository(DataSource);
+    const testSourceRep = getRepository(TestSource);
+
+    // buscamos si existen
+    let findOp = await operatorRep.findOne({
+      where: { name: operator.name },
+      relations: ['tests'],
+    });
+    let findInst = await instrumentalistRep.findOne({
+      where: { name: instrumentalist.name },
+      relations: ['tests'],
+    });
+    // validamos si se encontro, si no lo creamos
+    if (!findOp) {
+      findOp = await operatorRep.save(
+        operatorRep.create({ name: operator.name }),
+      );
+    }
+    if (!findInst) {
+      findInst = await instrumentalistRep.save(
+        instrumentalistRep.create({ name: instrumentalist.name }),
+      );
+    }
+    // obtenemos los sensores
+    const findSensors = await sensorRep.find({
+      select: ['id'],
+      where: { id: In([...sensorsTSelected, ...sensorsPSelected]) },
+    });
+    // creamos los data sorces a partir de la cantidad de sensores
+    const dataSourceForSensors = await dataSourceRep.save(
+      dataSourceRep.create(
+        findSensors.map(() => {
+          return {
+            data: '[]',
+          };
+        }),
+      ),
+    );
+    // se crea el objeto para crear los test source y se guarda
+    const testSourceForTest = await testSourceRep.save(
+      testSourceRep.create(
+        findSensors.map(({ id }, index) => {
+          return {
+            datasource: { id: dataSourceForSensors[index].id },
+            sensor: { id },
+          };
+        }),
+      ),
+    );
+
+    const newTest = testRep.save(
+      testRep.create({
         name,
         dateInit,
-        operator: {
-          id: parseInt(operator.id),
-        },
-        instrumentalist: {
-          id: parseInt(instrumentalist.id),
-        },
-        testSources: testSorurces.map(({ id }) => {
-          return { id: parseInt(id) };
+        operator: { id: findOp.id },
+        instrumentalist: { id: findInst.id },
+        testSources: testSourceForTest.map(({ id }) => {
+          return { id };
         }),
       }),
     );
+
     return newTest;
   }
 

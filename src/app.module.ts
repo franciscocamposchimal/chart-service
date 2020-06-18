@@ -20,7 +20,7 @@ import { TestSource } from './entities/TestSource.entity';
       database: './database/dev.db',
       synchronize: true,
       dropSchema: false,
-      logging: true,
+      logging: false,
       entities: [
         DataSource,
         Instrumentalist,

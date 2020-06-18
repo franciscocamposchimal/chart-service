@@ -1,17 +1,18 @@
 import {
   IsString,
-  IsNumber,
   IsOptional,
   ValidateNested,
   IsBoolean,
+  IsArray,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { OperatorModel } from './operator.model';
 import { instrumentalistModel } from './instrumentalist.model';
-import { TestSourceModel } from './testSource.model';
+// import { TestSourceModel } from './testSource.model';
 
 export class TestModel {
-  @IsNumber()
+  // @IsNumber()
   @IsOptional()
   id?: string;
 
@@ -41,8 +42,17 @@ export class TestModel {
   @Type(() => instrumentalistModel)
   readonly instrumentalist?: instrumentalistModel;
 
+  @IsArray()
+  @ArrayNotEmpty()
   @IsOptional()
+  sensorsTSelected?: number[];
+
+  @IsArray()
+  @ArrayNotEmpty()
+  sensorsPSelected?: number[];
+
+  /* @IsOptional()
   @ValidateNested()
   @Type(() => TestSourceModel)
-  readonly testSorurces?: TestSourceModel[];
+  readonly testSorurces?: TestSourceModel[]; */
 }
