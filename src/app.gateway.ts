@@ -8,6 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
+import { TestService } from 'test/test.service';
 
 let DATA_CLIENT = '';
 
@@ -20,6 +21,8 @@ export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
+
+  constructor(private readonly testService: TestService) {}
 
   afterInit(server: Server) {
     this.logger.log('Init');
@@ -48,9 +51,39 @@ export class AppGateway
   }
 
   @SubscribeMessage('SERVER_SOCK')
-  handleData(client: Socket, payload: any): void {
+  async handleData(client: Socket, payload: any) {
     // this.logger.log(payload);
     this.server.emit('SENSORS_DATA', payload);
+    const testInProgress: any = await this.testService.getTestInProgress();
+    // console.log(testInProgress);
+    if (testInProgress.id) {
+      const { testSources } = testInProgress;
+      const { sensorsP, sensorsT } = payload;
+      // console.log(testSources);
+      testSources.forEach(
+        async ({ sensor: { tag, type }, datasource: { data } }) => {
+          // console.log(`SENSOR.. tag:${tag} type:${type} id:${data}`);
+          if (type === 'T') {
+            const getSensorT = sensorsT.find((s: any) => s.name === tag);
+            const updateTArray = await this.testService.updateDataSource(
+              data,
+              getSensorT.val,
+            );
+            console.log('getSensorT ', updateTArray);
+          } else {
+            const getSensorP = sensorsP.find((s: any) => s.name === tag);
+            const updatePArray = await this.testService.updateDataSource(
+              data,
+              getSensorP.val,
+            );
+            console.log('getSensorP ', updatePArray);
+          }
+        },
+      );
+    } else {
+      console.log('NO TEST..');
+    }
+    // console.log(testInProgress);
   }
 
   @SubscribeMessage('SENSORS_CONNECTION')
@@ -63,4 +96,13 @@ export class AppGateway
       isConnected,
     });
   }
+
+  /* private convertToArray(data: any) {
+    return data
+      .trim()
+      .substr(1, data.length - 2)
+      .split(',')
+      .map((e: any) => e.trim())
+      .filter((e: any) => e !== '');
+  } */
 }

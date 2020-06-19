@@ -29,6 +29,8 @@
     "@nestjs/websockets": "^7.1.2",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.12.2",
+    "moment": "^2.26.0",
+    "moment-timezone": "^0.5.31",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.5.4",

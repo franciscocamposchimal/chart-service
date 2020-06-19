@@ -12,6 +12,7 @@ import { Test } from './entities/Test.entity';
 import { Operator } from './entities/Operator.entity';
 import { Sensor } from './entities/Sensor.entity';
 import { TestSource } from './entities/TestSource.entity';
+import { TestService } from 'test/test.service';
 
 @Module({
   imports: [
@@ -35,6 +36,6 @@ import { TestSource } from './entities/TestSource.entity';
     SensorModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AppGateway],
+  providers: [AppService, AppGateway, TestService],
 })
 export class AppModule {}
