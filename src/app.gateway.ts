@@ -58,32 +58,32 @@ export class AppGateway
     // console.log(testInProgress);
     if (testInProgress.id) {
       const { testSources } = testInProgress;
-      const { sensorsP, sensorsT } = payload;
+      const { date, sensorsP, sensorsT } = payload;
+      let sensorDataToExcel = [];
       // console.log(testSources);
       testSources.forEach(
         async ({ sensor: { tag, type }, datasource: { data } }) => {
           // console.log(`SENSOR.. tag:${tag} type:${type} id:${data}`);
           if (type === 'T') {
             const getSensorT = sensorsT.find((s: any) => s.name === tag);
-            const updateTArray = await this.testService.updateDataSource(
-              data,
-              getSensorT.val,
-            );
-            console.log('getSensorT ', updateTArray);
+            sensorDataToExcel.push(getSensorT);
+            await this.testService.updateDataSource(data, getSensorT.val);
+            // console.log('getSensorT ', updateTArray);
           } else {
             const getSensorP = sensorsP.find((s: any) => s.name === tag);
-            const updatePArray = await this.testService.updateDataSource(
-              data,
-              getSensorP.val,
-            );
-            console.log('getSensorP ', updatePArray);
+            sensorDataToExcel.push(getSensorP);
+            await this.testService.updateDataSource(data, getSensorP.val);
+            // console.log('getSensorP ', updatePArray);
           }
         },
       );
-    } else {
-      console.log('NO TEST..');
+
+      this.testService.updatePrintData(testInProgress.name, {
+        date,
+        sensors: sensorDataToExcel,
+      });
+      sensorDataToExcel = [];
     }
-    // console.log(testInProgress);
   }
 
   @SubscribeMessage('SENSORS_CONNECTION')

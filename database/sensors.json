@@ -1,0 +1,39 @@
+{
+    "RECORDS": [
+        {
+            "name": "SensorT1",
+            "tag": "s1",
+            "type": "T"
+        },
+        {
+            "name": "SensorT2",
+            "tag": "s2",
+            "type": "T"
+        },
+        {
+            "name": "SensorT3",
+            "tag": "s3",
+            "type": "T"
+        },
+        {
+            "name": "SensorT4",
+            "tag": "s4",
+            "type": "T"
+        },
+        {
+            "name": "SensorP5",
+            "tag": "s5",
+            "type": "P"
+        },
+        {
+            "name": "SensorP6",
+            "tag": "s6",
+            "type": "P"
+        },
+        {
+            "name": "SensorP7",
+            "tag": "s7",
+            "type": "P"
+        }
+    ]
+}

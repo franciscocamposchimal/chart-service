@@ -3,7 +3,6 @@ import { getRepository, In } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TestModel } from '../models/test.model';
-import { dataSourceModel } from '../models/dataSource.model';
 import { Test } from '../entities/Test.entity';
 import { Operator } from '../entities/Operator.entity';
 import { Instrumentalist } from '../entities/Instrumentalist.entity';
@@ -11,7 +10,6 @@ import { Sensor } from '../entities/Sensor.entity';
 import { DataSource } from '../entities/DataSource.entity';
 import { TestSource } from '../entities/TestSource.entity';
 import { formatDateToday } from '../helpers/FormatDate';
-import { dir } from 'console';
 
 @Injectable()
 export class TestService {
@@ -119,15 +117,18 @@ export class TestService {
       where: { id: In([...sensorsTSelected, ...sensorsPSelected]) },
     });
     //creamos la carpte y archivos para los datos de sensores
-    this.createDir(name.replace(/\s+/g, ''));
-    // const jsonData = this.readFile(name, 's1');
-    // creamos los data sorces a partir de la cantidad de sensores
+    const nameDir = name.replace(/\s+/g, '');
+    this.createDir(nameDir);
+    this.createOrUpdateFile(`../../database/data/${nameDir}/print.json`, []);
+
     const dataSourceForSensors = await dataSourceRep.save(
       dataSourceRep.create(
         findSensors.map(({ tag }) => {
           const pathToSave = this.createOrUpdateFile(
-            `../../database/data/${name.replace(/\s+/g, '')}/${tag}.json`,
-            { data: [] },
+            `../../database/data/${nameDir}/${tag}.json`,
+            {
+              data: [],
+            },
           );
           return {
             data: pathToSave,
@@ -210,10 +211,50 @@ export class TestService {
     }
   }
 
+  updatePrintData(nameTest: any, { date, sensors }: any) {
+    const dataToSave = sensors
+      .map(({ name, val }) => {
+        const item = {};
+        item[name] = val;
+        return item;
+      })
+      .reduce(
+        (result: any, item: any) => {
+          const key = Object.keys(item)[0];
+          result[key] = item[key];
+          return result;
+        },
+        { date },
+      );
+    const nameDir = nameTest.replace(/\s+/g, '');
+    const dataStored = this.readFile(
+      `../../database/data/${nameDir}/print.json`,
+    );
+    dataStored.push(dataToSave);
+    this.createOrUpdateFile(
+      `../../database/data/${nameDir}/print.json`,
+      dataStored,
+    );
+  }
+
+  async getDataExecel(id:any){
+    const testRep = getRepository(Test);
+    const test = await testRep.findOne({ where: { id } });
+    const nameDir = test.name.replace(/\s+/g, '');
+    const dataStored = this.readFile(
+      `../../database/data/${nameDir}/print.json`,
+    );
+    return dataStored;
+  }
+
   async deleteTest(id: any) {
     try {
       const deleteConfirmation = await this.getOneTest(id);
+      const { name, testSources } = deleteConfirmation;
+      const dataSourceList = testSources.map(({ datasource: { id } }) => id);
+      await getRepository(DataSource).delete(dataSourceList);
       await getRepository(Test).delete(id);
+      this.deleteDir(`${name.replace(/\s+/g, '')}`);
       return deleteConfirmation;
     } catch (error) {
       return error;
@@ -244,5 +285,12 @@ export class TestService {
     });
 
     return JSON.parse(dataSourceJson);
+  }
+
+  private deleteDir(dirPath: any) {
+    const pathToDir = path.join(__dirname, `../../database/data/${dirPath}`);
+
+    fs.rmdirSync(pathToDir, { recursive: true });
+    console.log(pathToDir);
   }
 }

@@ -15,13 +15,14 @@ export class TestSource {
   id: number;
 
   @ManyToOne(() => Test, (test) => test.testSources, {
-    onDelete: "SET NULL",
+    onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "testId", referencedColumnName: "id" }])
   test: Test;
   
   @ManyToOne(() => DataSource, (dataSource) => dataSource.testSources, {
+    cascade: true,
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
@@ -29,7 +30,7 @@ export class TestSource {
   datasource: DataSource;
   
   @ManyToOne(() => Sensor, (sensor) => sensor.testSources, {
-    onDelete: "CASCADE",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "sensorId", referencedColumnName: "id" }])
