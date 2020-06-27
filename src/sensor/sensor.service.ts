@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { sensorModel } from '../models/sensor.model';
 import { getRepository } from 'typeorm';
 import { Sensor } from '../entities/Sensor.entity';
+import { json } from 'express';
 
 @Injectable()
 export class SensorService {
@@ -15,8 +16,8 @@ export class SensorService {
   }
 
   async getSensorToGraph() {
-    const sensorsT = await getRepository(Sensor).find({where: { type: 'T'}});
-    const sensorsP = await getRepository(Sensor).find({where: { type: 'P'}});
+    const sensorsT = await getRepository(Sensor).find({ where: { type: 'T' } });
+    const sensorsP = await getRepository(Sensor).find({ where: { type: 'P' } });
     return { sensorsT, sensorsP };
   }
 
@@ -57,5 +58,33 @@ export class SensorService {
     } catch (error) {
       return error;
     }
+  }
+
+  dataConvert(type: any, sensorsValue: any[]): any[] {
+    let convertedList: any[] = [];
+    const roundVal: any = (num: any) => Math.round(num * 100) / 100;
+    switch (type) {
+      case 'F':
+        convertedList = sensorsValue.map(sensor => {
+          sensor.val = roundVal((sensor.val * 9) / 5 + 32);
+          return sensor;
+        });
+        break;
+      case 'Pa':
+        convertedList = sensorsValue.map(sensor => {
+          sensor.val = roundVal(sensor.val * 6895);
+          return sensor;
+        });
+        break;
+      case 'MPa':
+        convertedList = sensorsValue.map(sensor => {
+          sensor.val = roundVal(sensor.val / 145);
+          return sensor;
+        });
+        break;
+      default:
+        break;
+    }
+    return convertedList;
   }
 }

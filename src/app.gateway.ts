@@ -9,6 +9,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { TestService } from 'test/test.service';
+import { SensorService } from 'sensor/sensor.service';
 
 let DATA_CLIENT = '';
 
@@ -22,7 +23,10 @@ export class AppGateway
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
 
-  constructor(private readonly testService: TestService) {}
+  constructor(
+    private readonly testService: TestService,
+    private readonly sensorService: SensorService,
+  ) {}
 
   afterInit(server: Server) {
     this.logger.log('Init');
@@ -53,12 +57,16 @@ export class AppGateway
   @SubscribeMessage('SERVER_SOCK')
   async handleData(client: Socket, payload: any) {
     // this.logger.log(payload);
+    const { date, sensorsP, sensorsT } = payload;
+    payload.sensorsPa = this.sensorService.dataConvert('Pa', JSON.parse(JSON.stringify(sensorsP)));
+    payload.sensorsMPa = this.sensorService.dataConvert('MPa', JSON.parse(JSON.stringify(sensorsP)));
+    payload.sensorsF = this.sensorService.dataConvert('F', JSON.parse(JSON.stringify(sensorsT)));
+    // console.log(payload);
     this.server.emit('SENSORS_DATA', payload);
     const testInProgress: any = await this.testService.getTestInProgress();
     // console.log(testInProgress);
     if (testInProgress.id) {
       const { testSources } = testInProgress;
-      const { date, sensorsP, sensorsT } = payload;
       let sensorDataToExcel = [];
       // console.log(testSources);
       testSources.forEach(
